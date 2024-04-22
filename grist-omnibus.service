@@ -1,0 +1,21 @@
+[Unit]
+Description=Grist Omnibus
+
+[Service]
+ExecStart=docker run \
+  -p 80:80 -p 443:443 \
+  -e URL=https://<IONOS server Public website name> \
+  -e HTTPS=auto \
+  -e TEAM=team_name \
+  -e EMAIL=name1@company.com \
+  -e PASSWORD=changethispassword \
+  -e EMAIL2=name2@company.com \
+  -e PASSWORD2=changethispassword2 \
+  -v /root/persist:/persist \
+  --rm gristlabs/grist-omnibus
+Restart=on-failure
+RestartSec=5s
+User=root
+
+[Install]
+WantedBy=multi-user.target
