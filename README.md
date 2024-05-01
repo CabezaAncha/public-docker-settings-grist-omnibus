@@ -95,6 +95,91 @@ You can check (tail) the logs/output with:
 ```
 journalctl -u grist-omnibus.service -f
 ```
+## Grist upgrade
+
+To upgrade Grist, you need to do the following steps:
+
+1. Make a data backup
+2. Backup your current Docker images
+3. Pull new Docker images
+4. Restart Grist
+
+### 1. Make a data backup
+
+TODO
+
+### 2. Backup your current Docker images
+
+Run:
+
+```
+docker image ls
+```
+
+You will get the following overview:
+
+```
+REPOSITORY                        TAG               IMAGE ID       CREATED         SIZE
+gristlabs/grist                   latest            8b1ad55973c0   4 hours ago     1.01GB
+gristlabs/grist-omnibus           latest            79751cdb802c   13 hours ago    1.22GB
+gristlabs/grist-omnibus           backup-20240501   6823d27e4530   3 months ago    1.16GB
+gristlabs/grist                   backup-20240501   76b3f1c5d1df   3 months ago    950MB
+docker                            latest            cf951b77e884   3 months ago    331MB
+python                            latest            fc7a60e86bae   4 months ago    1.02GB
+hello-world                       latest            d2c94e258dcb   12 months ago   13.3kB
+traefik                           v2.6              22c6901de2be   23 months ago   102MB
+thomseddon/traefik-forward-auth   2                 35e1f839c20f   3 years ago     14.2MB
+```
+
+Notice `gristlabs/grist` and `gristlabs/grist-omnibus` having a backup from a previous upgrade. The current version runs on "latest".
+
+To backup the current latest tags run:
+
+```
+docker tag gristlabs/grist-omnibus:latest gristlabs/grist-omnibus:backup-$(date +%Y%m%d)
+docker tag gristlabs/grist:latest gristlabs/grist:backup-$(date +%Y%m%d)
+```
+
+Check `docker image ls` again to see the new tags.
+
+### 3. Pull new Docker images
+
+Run the following:
+
+```
+docker pull gristlabs/grist-omnibus:latest
+docker pull gristlabs/grist:latest
+```
+
+### 4. Restart Grist
+
+First find the current container ID and next stop it:
+
+```
+docker ps
+```
+
+```
+CONTAINER ID   IMAGE                     COMMAND                  CREATED          STATUS          PORTS                                                                                NAMES
+b8d087e7dab4   gristlabs/grist-omnibus   "docker-entrypoint.s…"   31 minutes ago   Up 31 minutes   0.0.0.0:80->80/tcp, :::80->80/tcp, 0.0.0.0:443->443/tcp, :::443->443/tcp, 8484/tcp   amazing_ride
+```
+
+```
+docker stop b8d087e7dab4
+```
+
+Or use the one-liner:
+
+```
+docker stop $(docker ps -q --filter "ancestor=gristlabs/grist-omnibus" | head -n 1)
+```
+
+Next, start Grist again:
+
+```
+cd grist-omnibus/
+./start.sh
+```
 
 # Grist settings
 
